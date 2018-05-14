@@ -1,11 +1,13 @@
 #include "uart.h"
 #include "mbox.h"
+#include "rand.h"
 
 void
 main()
 {
     /* Setup serial console */
     uart_init();
+    rand_init();
 
     /* Get board's unique serial number with a mailbox call */
     mbox[0] = 8 * 4;              /* Message length */
@@ -28,6 +30,11 @@ main()
     } else {
 	uart_puts("Unable to query board serial number\n");
     }
+
+    /* test rng */
+    uart_puts("Here, have a random number: ");
+    uart_hex(rand(0, 4294967295));
+    uart_puts("\n");
 
     /* Echo everything back */
     while(1) {
