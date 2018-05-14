@@ -18,13 +18,14 @@ main()
     rand_init();
     lfb_init();
 
-    /*
     test_mbox();
     test_rng();
-    test_delay();
-    test_power();
-    */
+    /*test_delay();*/
+    
     lfb_showpicture();
+    lfb_print(10, 5, "Hello, world!");
+
+    test_power();
 
     /* Echo everything back */
     while(1) {

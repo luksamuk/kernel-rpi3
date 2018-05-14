@@ -2,8 +2,23 @@
 #include "mbox.h"
 #include "homer.h"
 
-#define __stack_chk_guard 1
-#define __stack_chk_fail 1
+typedef struct {
+    unsigned int  magic;
+    unsigned int  version;
+    unsigned int  headersize;
+    unsigned int  flags;
+    unsigned int  numglyph;
+    unsigned int  bytesperglyph;
+    unsigned int  height;
+    unsigned int  width;
+    unsigned char glyphs;
+} __attribute__((packed)) psf_t;
+
+/*
+  Font label was found using readelf on .o file:
+  $(READELF) -s font.o
+*/
+extern volatile unsigned char _binary_font_psf_start;
 
 unsigned int width, height, pitch;
 unsigned char *lfb;
@@ -18,14 +33,14 @@ lfb_init()
     mbox[2]  = 0x48003; /* set physical width/height */
     mbox[3]  = 8;
     mbox[4]  = 8;
-    mbox[5]  = 1024;    /* framebuffer width */
-    mbox[6]  = 768;     /* framebuffer height */
+    mbox[5]  = 1280;    /* framebuffer width */
+    mbox[6]  = 720;     /* framebuffer height */
 
     mbox[7]  = 0x48004; /* set virtual width/height */
     mbox[8]  = 8;
     mbox[9]  = 8;
-    mbox[10] = 1024;    /* framebuffer virt width */
-    mbox[11] = 768;     /* framebuffer virt height */
+    mbox[10] = 1280;    /* framebuffer virt width */
+    mbox[11] = 720;     /* framebuffer virt height */
 
     mbox[12] = 0x48009; /* set virtual offset */
     mbox[13] = 8;
@@ -63,7 +78,7 @@ lfb_init()
 	pitch  = mbox[33];
 	lfb = (void*)((unsigned long)mbox[28]);
     } else {
-	uart_puts("Unable to set screen resolution to 1024x768x32\n");
+	uart_puts("Unable to set screen resolution to 1280x720x32\n");
     }
 }
 
@@ -84,5 +99,53 @@ lfb_showpicture()
 	    ptr += 4;
 	}
 	ptr += pitch - homer_width * 4;
+    }
+}
+
+
+/* Display a string */
+void
+lfb_print(int x, int y, char *s)
+{
+    /* get the font */
+    psf_t *font = (psf_t*)&_binary_font_psf_start;
+    /* if it is not zero, draw next character */
+    while(*s) {
+	/* get glyph offset. Needs adjust to support unicode. */
+	unsigned char *glyph = (unsigned char*)&_binary_font_psf_start
+	    + font->headersize + ((*((unsigned char*)s) < font->numglyph ? *s : 0)
+				  * font->bytesperglyph);
+	/* calculate offset on screen */
+	int offs = (y * font->height * pitch) + (x * (font->width + 1) * 4);
+
+	int i, j,
+	    line, mask,
+	    bytesperline = (font->width + 7) / 8;
+
+	/* handle carriage return */
+	if(*s == '\r') {
+	    x = 0;
+	} else if(*s == '\n') { /* handle newline */
+	    x = 0; y++;
+	} else { /* display a character */
+	    for(j = 0; j < font->height; j++) {
+		/* display one row */
+		line = offs;
+		mask = 1 << (font->width - 1);
+		for(i = 0; i < font->width; i++) {
+		    /* If bit is set, we use white color.
+		       Otherwise, use black */
+		    *((unsigned int*)(lfb + line)) = ((int)*glyph) & mask ? 0xFFFFFF : 0;
+		    mask >>= 1;
+		    line += 4;
+		}
+		/* adjust to next line */
+		glyph += bytesperline;
+		offs += pitch;
+	    }
+	    x++;
+	}
+	/* next character */
+	s++;
     }
 }
