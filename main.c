@@ -2,11 +2,12 @@
 #include "mbox.h"
 #include "rand.h"
 #include "delays.h"
+#include "power.h"
 
 void test_mbox();
 void test_rng();
 void test_delay();
-
+void test_power();
 
 
 void
@@ -17,10 +18,9 @@ main()
     rand_init();
 
     test_mbox();
-
     test_rng();
-
-    test_delay();
+    /*test_delay();*/
+    test_power();
 
     /* Echo everything back */
     while(1) {
@@ -83,5 +83,20 @@ test_delay()
     } else {
 	wait_msec_st(1000000);
 	uart_puts("OK\n");
+    }
+}
+
+void
+test_power()
+{
+    char c;
+    while(1) {
+	uart_puts(" 1 - power off\n 2 - reset\nChoose one: ");
+	c = uart_getc();
+	uart_send(c);
+	uart_puts("\n\n");
+
+	if(c == '1') power_off();
+	if(c == '2') reset();
     }
 }
