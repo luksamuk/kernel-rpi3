@@ -4,7 +4,7 @@ OBJCOPY = aarch64-linux-musl-objcopy
 
 SOURCES = $(wildcard *.c)
 OBJS    = $(SOURCES:.c=.o)
-CFLAGS  = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
+CFLAGS  = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles -fno-stack-protector
 
 .PHONY: clean
 

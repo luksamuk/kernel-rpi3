@@ -3,6 +3,7 @@
 #include "rand.h"
 #include "delays.h"
 #include "power.h"
+#include "lfb.h"
 
 void test_mbox();
 void test_rng();
@@ -13,14 +14,17 @@ void test_power();
 void
 main()
 {
-    /* Setup serial console */
     uart_init();
     rand_init();
+    lfb_init();
 
+    /*
     test_mbox();
     test_rng();
-    /*test_delay();*/
+    test_delay();
     test_power();
+    */
+    lfb_showpicture();
 
     /* Echo everything back */
     while(1) {
