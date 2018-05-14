@@ -1,7 +1,9 @@
 This is an attempt at slowly implementing a Raspberry Pi 3 bare-metal kernel, based
-on David Welch's tutorial (https://github.com/dwelch67/raspberrypi).
+on Zoltan Baldaszti's tutorial (https://github.com/bztsrc/raspi3-tutorial).
 
 You'll find more info over there; my main goal is to actually build a Lisp system
 that could run on the RPi3, so this is only a step towards it. Don't take this
 repository seriously.
 
+Other links:
+- David Welch's RPi examples -- https://github.com/dwelch67/raspberrypi
