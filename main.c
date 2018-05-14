@@ -1,6 +1,7 @@
 #include "uart.h"
 #include "mbox.h"
 #include "rand.h"
+#include "delays.h"
 
 void
 main()
@@ -35,6 +36,22 @@ main()
     uart_puts("Here, have a random number: ");
     uart_hex(rand(0, 4294967295));
     uart_puts("\n");
+
+    uart_puts("Waiting 10000000 CPU cycles (ARM CPU): ");
+    wait_cycles(10000000);
+    uart_puts("OK\n");
+
+    uart_puts("Waiting 10000000 CPU microseconds (ARM CPU): ");
+    wait_msec(10000000);
+    uart_puts("OK\n");
+
+    uart_puts("Waiting 10000000 CPU microseconds (BCM System Timer): ");
+    if(get_system_timer() == 0) {
+	uart_puts("Not available\n");
+    } else {
+	wait_msec_st(1000000);
+	uart_puts("OK\n");
+    }
 
     /* Echo everything back */
     while(1) {
